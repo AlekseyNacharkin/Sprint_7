@@ -22,6 +22,10 @@ class APIClient:
         url = f"{self.BASE_URL}{endpoint}"
         return requests.post(url, json=data)
 
+    def get_courier_orders(self,endpoint = "/api/v1/orders",params = None):
+        url = f"{self.BASE_URL}{endpoint}"
+        return requests.get(url,params= params)
+
     def register_new_courier_and_return_login_password(self):
         # метод генерирует строку, состоящую только из букв нижнего регистра, в качестве параметра передаём длину строки
         def generate_random_string(length):
