@@ -7,85 +7,82 @@ from Sprint_7.constants import *
 
 class TestDeleteCourier:
     @allure.title("Удаление курьера")
-    def test_delete_courier(self, api_client, create_courier_with_id):
-        response = api_client.delete_courier(id = create_courier_with_id["id"])
+    def test_delete_courier(self, api_client, new_courier):
+        response = api_client.delete_courier(id = new_courier["id"])
         assert response.status_code == 200
 
 class TestLoginCourier:
 
-    @allure.title("Логин курьера")
-    def test_login_courier(self, api_client):
-        courier_data = api_client.register_new_courier_and_return_login_password()
-        response = api_client.login_courier(data={"login": courier_data[0],"password": courier_data[1],"firstName": courier_data[2]})
+    @allure.title("Авторизация курьера")
+    def test_login_courier(self, api_client,new_courier):
+        response = api_client.login_courier(data={"login": new_courier["login"],"password": new_courier["password"]})
         assert response.status_code == 200
 
-    @allure.title("Повторный логин курьера с одинаковыми данными")
-    def test_login_courier_with_exist_login(self, api_client, create_courier_with_id):
-        response = api_client.create_courier(data={
-            "login": create_courier_with_id["login"],
-            "password": create_courier_with_id["password"],
-            "firstName": create_courier_with_id["first_name"]
-        })
-        assert response.status_code == 409
 
-    @allure.title("Логин курьера без поля 'логин'")
+    @allure.title("Авторизация курьера без поля 'логин'")
     def test_login_courier_without_login(self, api_client):
-        response = api_client.create_courier(data={
+        response = api_client.login_courier(data={
             "login": None,
-            "password": "password",
-            "firstName": "first_name"
+            "password": "password"
         })
         assert response.status_code == 400
 
+    @allure.title("Авторизация курьера без поля 'пароль'")
+    def test_login_courier_without_password(self, api_client):
+        response = api_client.login_courier(data={
+            "login": "login",
+            "password": ""
+        })
+        assert response.status_code == 400
+
+    @allure.title("Текст ошибки авторизации не созданного курьера ")
+    def test_login_with_uncreated_data(self,api_client):
+        response = api_client.login_courier(data={
+            "login": "f",
+            "password": "d"
+        })
+        assert response.json().get("message") == ASSERTION_TEXT_AUTHORIZATION
+
     @allure.title("'id' содержится в тексте ответа при логине курьера")
-    def test_login_courier_body_have_id(self, api_client):
-        courier_data = api_client.register_new_courier_and_return_login_password()
-        response = api_client.login_courier(data={"login": courier_data[0],"password": courier_data[1],"firstName": courier_data[2]})
+    def test_login_courier_body_have_id(self, api_client,new_courier):
+        response = api_client.login_courier(data={"login": new_courier["login"],"password": new_courier["password"],"firstName": new_courier["first_name"]})
         assert ID_ASSERTION_TEXT in response.json()
 
 class TestCreateCourier:
 
     @allure.title("Код ответа при успешном создании курьера")
-    def test_create_courier(self,api_client):
-        courier_data = api_client.courier_data_for_create()
-        response = api_client.create_courier(data={"login": courier_data[0],"password": courier_data[1],"firstName": courier_data[2]})
+    def test_create_courier(self,api_client,new_courier_data):
+        response = api_client.create_courier(data={"login": new_courier_data[0], "password": new_courier_data[1], "firstName": new_courier_data[2]})
         assert response.status_code == 201
 
     @allure.title("Повторное создание курьера")
-    def test_create_clone_courier(self,api_client):
-        courier_data = api_client.courier_data_for_create()
-        api_client.create_courier(data={"login": courier_data[0], "password": courier_data[1], "firstName": courier_data[2]})
-        response = api_client.create_courier(data={"login": courier_data[0], "password": courier_data[1], "firstName": courier_data[2]})
+    def test_create_clone_courier(self,api_client,new_courier_data):
+        api_client.create_courier(data={"login": new_courier_data[0], "password": new_courier_data[1], "firstName": new_courier_data[2]})
+        response = api_client.create_courier(data={"login": new_courier_data[0], "password": new_courier_data[1], "firstName": new_courier_data[2]})
         assert response.status_code == 409
 
     @allure.title("Код ответа при отсутствии логина при создании курьера")
-    def test_create_couirier_without_login(self,api_client):
-        courier_data = api_client.courier_data_for_create()
+    def test_create_couirier_without_login(self,api_client,new_courier_data):
         response = api_client.create_courier(
-            data={"login": None, "password": courier_data[1], "firstName": courier_data[2]})
+            data={"login": None, "password": new_courier_data[1], "firstName": new_courier_data[2]})
         assert response.status_code == 400
 
     @allure.title("Код ответа при отсутствии пароля при создании курьера")
-    def test_create_couirier_without_password(self,api_client):
-        courier_data = api_client.courier_data_for_create()
+    def test_create_couirier_without_password(self,api_client,new_courier_data):
         response = api_client.create_courier(
-            data={"login": courier_data[0], "password": None, "firstName": courier_data[2]})
+            data={"login": new_courier_data[0], "password": None, "firstName": new_courier_data[2]})
         assert response.status_code == 400
 
     @allure.title("Тело ответа при успешном создании курьера")
-    def test_body_create_courier(self,api_client):
-        courier_data = api_client.courier_data_for_create()
+    def test_body_create_courier(self,api_client,new_courier_data):
         response = api_client.create_courier(
-            data={"login": courier_data[0], "password": courier_data[1], "firstName": courier_data[2]})
+            data={"login": new_courier_data[0], "password": new_courier_data[1], "firstName": new_courier_data[2]})
         assert response.json() == ASSERTION_VALUE_TEST_CREATE_COURIER
 
     @allure.title("Тело ответа при дублировании данных при создании курьера")
-    def test_warning_create_clone_courier(self, api_client):
-        courier_data = api_client.courier_data_for_create()
-        api_client.create_courier(
-            data={"login": courier_data[0], "password": courier_data[1], "firstName": courier_data[2]})
+    def test_warning_create_clone_courier(self, api_client,new_courier):
         response = api_client.create_courier(
-            data={"login": courier_data[0], "password": courier_data[1], "firstName": courier_data[2]})
+            data={"login": new_courier["login"], "password": new_courier["password"], "firstName": new_courier["first_name"]})
         assert TEXT_LOGIN_USED == response.json()
 
 class TestCreateOrder:
@@ -98,9 +95,9 @@ class TestCreateOrder:
 
 class TestCourierOrders:
     @allure.title("Получение списка заказов")
-    def test_get_courier_orders(self, api_client, create_courier_with_id):
+    def test_get_courier_orders(self, api_client, new_courier):
         response = api_client.get_courier_orders(
-            params={"courierId": create_courier_with_id["id"],"nearestStation": 2})
+            params={"courierId": new_courier["id"], "nearestStation": 2})
         assert isinstance(response.json()["orders"], list)
 
 

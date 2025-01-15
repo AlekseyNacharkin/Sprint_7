@@ -36,3 +36,4 @@ TRACK = "track"
 TEXT_LOGIN_USED = {'code': 409, 'message': 'Этот логин уже используется. Попробуйте другой.'}
 ASSERTION_VALUE_TEST_CREATE_COURIER = {"ok": True}
 ID_ASSERTION_TEXT = "id"
+ASSERTION_TEXT_AUTHORIZATION = "Учетная запись не найдена"
